@@ -3,7 +3,23 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: "Fira Code", monospace;
   background-color: #f5f5dc;
   color: #333;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  overflow: -moz-scrollbars-none; /* Firefox (older versions) */
+}
+
+/* For WebKit browsers (Chrome, Safari) */
+*::-webkit-scrollbar {
+  width: 0 !important;
+  display: none;
 }

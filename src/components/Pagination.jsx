@@ -1,63 +1,88 @@
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { motion } from "framer-motion";
+
 function Pagination({ patientsPerPage, totalPatients, currentPage, paginate }) {
-  const pageNumbers = [];
+  const totalPages = Math.ceil(totalPatients / patientsPerPage);
+  if (totalPages <= 1) return null;
 
-  for (let i = 1; i <= Math.ceil(totalPatients / patientsPerPage); i++) {
-    pageNumbers.push(i);
-  }
+  const getPagesToShow = () => {
+    if (totalPages <= 5)
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (currentPage <= 3) return [1, 2, 3, 4, "...", totalPages];
+    if (currentPage >= totalPages - 2)
+      return [
+        1,
+        "...",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      ];
+    return [
+      1,
+      "...",
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      "...",
+      totalPages,
+    ];
+  };
 
-  if (pageNumbers.length <= 1) return null;
+  const pagesToShow = getPagesToShow();
+  const btnClass =
+    "mx-1 w-10 h-10 rounded-full flex items-center justify-center transition-all";
+  const activeClass = "bg-[#8B4513] text-white shadow-md";
+  const inactiveClass =
+    "bg-white text-[#8B4513] hover:bg-[#f5f5dc] shadow-sm hover:shadow";
+  const disabledClass = "bg-gray-100 text-gray-400 cursor-not-allowed";
 
   return (
-    <div className="flex justify-center py-6">
-      <ul className="flex flex-wrap space-x-1">
-        <li
-          className={`mx-1 ${
-            currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+    <motion.div
+      className="flex justify-center py-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, delay: 0.2 }}
+    >
+      <div className="flex flex-wrap items-center bg-white/80 py-2 px-4 rounded-full shadow-md">
+        <button
+          onClick={() => currentPage > 1 && paginate(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`${btnClass} ${
+            currentPage === 1 ? disabledClass : inactiveClass
           }`}
         >
-          <button
-            onClick={() => currentPage > 1 && paginate(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-2 border rounded bg-white hover:bg-[#f5f5dc] text-[#8B4513] transition"
-          >
-            Prev
-          </button>
-        </li>
+          <FaChevronLeft />
+        </button>
 
-        {pageNumbers.map((number) => (
-          <li key={number} className="mx-1">
-            <button
-              onClick={() => paginate(number)}
-              className={`px-3 py-2 border rounded transition ${
-                currentPage === number
-                  ? "bg-[#8B4513] text-white"
-                  : "bg-white text-[#8B4513] hover:bg-[#f5f5dc]"
-              }`}
-            >
-              {number}
-            </button>
-          </li>
+        {pagesToShow.map((num, i) => (
+          <button
+            key={i}
+            onClick={() => typeof num === "number" && paginate(num)}
+            disabled={typeof num !== "number"}
+            className={`${btnClass} ${
+              num === "..."
+                ? "cursor-default"
+                : num === currentPage
+                ? activeClass
+                : inactiveClass
+            }`}
+          >
+            {num}
+          </button>
         ))}
 
-        <li
-          className={`mx-1 ${
-            currentPage === pageNumbers.length
-              ? "opacity-50 cursor-not-allowed"
-              : ""
+        <button
+          onClick={() => currentPage < totalPages && paginate(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`${btnClass} ${
+            currentPage === totalPages ? disabledClass : inactiveClass
           }`}
         >
-          <button
-            onClick={() =>
-              currentPage < pageNumbers.length && paginate(currentPage + 1)
-            }
-            disabled={currentPage === pageNumbers.length}
-            className="px-3 py-2 border rounded bg-white hover:bg-[#f5f5dc] text-[#8B4513] transition"
-          >
-            Next
-          </button>
-        </li>
-      </ul>
-    </div>
+          <FaChevronRight />
+        </button>
+      </div>
+    </motion.div>
   );
 }
 

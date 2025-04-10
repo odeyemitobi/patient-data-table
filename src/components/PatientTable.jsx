@@ -1,170 +1,184 @@
 import { useState } from "react";
+import {
+  FaSort,
+  FaSortUp,
+  FaSortDown,
+  FaEye,
+  FaEdit,
+  FaChevronDown,
+  FaChevronUp,
+} from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 
-function PatientTable({ patients, requestSort, sortConfig, onViewPatient }) {
+function PatientTable({
+  patients,
+  requestSort,
+  sortConfig,
+  onViewPatient,
+  onEditPatient,
+}) {
   const [expandedRow, setExpandedRow] = useState(null);
 
-  const getClassNamesFor = (name) => {
-    if (!sortConfig) {
-      return;
-    }
-    return sortConfig.key === name ? sortConfig.direction : undefined;
-  };
+  const getSortIcon = (name) =>
+    sortConfig.key === name ? (
+      sortConfig.direction === "ascending" ? (
+        <FaSortUp className="ml-1 text-[#8B4513]" />
+      ) : (
+        <FaSortDown className="ml-1 text-[#8B4513]" />
+      )
+    ) : (
+      <FaSort className="ml-1 text-gray-400" />
+    );
 
-  const formatDate = (dateString) => {
-    const options = { year: "numeric", month: "short", day: "numeric" };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
 
-  const toggleMobileRow = (id) => {
+  const toggleMobileRow = (id) =>
     setExpandedRow(expandedRow === id ? null : id);
-  };
+
+  const headers = [
+    { key: "name", label: "Patient Name" },
+    { key: "age", label: "Age" },
+    { key: "gender", label: "Gender" },
+    { key: "diagnosis", label: "Diagnosis" },
+    { key: "admissionDate", label: "Admission Date" },
+  ];
 
   return (
-    <div className="overflow-hidden rounded-lg shadow">
+    <div className="overflow-hidden rounded-xl shadow-lg bg-white/70 transition-all duration-300">
       {/* Desktop View */}
       <div className="hidden md:block overflow-x-auto">
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr className="bg-[#8B4513] text-white">
-              <th
-                className="px-6 py-3 text-left text-sm font-semibold cursor-pointer"
-                onClick={() => requestSort("name")}
-              >
-                Patient Name{" "}
-                {getClassNamesFor("name") === "ascending"
-                  ? "↑"
-                  : getClassNamesFor("name") === "descending"
-                  ? "↓"
-                  : ""}
-              </th>
-              <th
-                className="px-6 py-3 text-left text-sm font-semibold cursor-pointer"
-                onClick={() => requestSort("age")}
-              >
-                Age{" "}
-                {getClassNamesFor("age") === "ascending"
-                  ? "↑"
-                  : getClassNamesFor("age") === "descending"
-                  ? "↓"
-                  : ""}
-              </th>
-              <th
-                className="px-6 py-3 text-left text-sm font-semibold cursor-pointer"
-                onClick={() => requestSort("gender")}
-              >
-                Gender{" "}
-                {getClassNamesFor("gender") === "ascending"
-                  ? "↑"
-                  : getClassNamesFor("gender") === "descending"
-                  ? "↓"
-                  : ""}
-              </th>
-              <th
-                className="px-6 py-3 text-left text-sm font-semibold cursor-pointer"
-                onClick={() => requestSort("diagnosis")}
-              >
-                Diagnosis{" "}
-                {getClassNamesFor("diagnosis") === "ascending"
-                  ? "↑"
-                  : getClassNamesFor("diagnosis") === "descending"
-                  ? "↓"
-                  : ""}
-              </th>
-              <th
-                className="px-6 py-3 text-left text-sm font-semibold cursor-pointer"
-                onClick={() => requestSort("admissionDate")}
-              >
-                Admission Date{" "}
-                {getClassNamesFor("admissionDate") === "ascending"
-                  ? "↑"
-                  : getClassNamesFor("admissionDate") === "descending"
-                  ? "↓"
-                  : ""}
-              </th>
+        <table className="min-w-full">
+          <thead className="bg-[#8B4513] text-white">
+            <tr>
+              {headers.map(({ key, label }) => (
+                <th
+                  key={key}
+                  className="px-6 py-3 text-left text-sm font-semibold cursor-pointer hover:bg-[#7a3b10]"
+                  onClick={() => requestSort(key)}
+                >
+                  <div className="flex items-center">
+                    {label}
+                    {getSortIcon(key)}
+                  </div>
+                </th>
+              ))}
               <th className="px-6 py-3 text-left text-sm font-semibold">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {patients.map((patient) => (
-              <tr key={patient.id} className="hover:bg-[#f5f5dc]">
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {patient.name}
+            {patients.map((p, i) => (
+              <motion.tr
+                key={p.id}
+                className="hover:bg-[#f5f5dc]"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+              >
+                <td className="px-6 py-4 text-sm font-medium">{p.name}</td>
+                <td className="px-6 py-4 text-sm">{p.age}</td>
+                <td className="px-6 py-4 text-sm">{p.gender}</td>
+                <td className="px-6 py-4 text-sm">{p.diagnosis}</td>
+                <td className="px-6 py-4 text-sm">
+                  {formatDate(p.admissionDate)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {patient.age}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {patient.gender}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {patient.diagnosis}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  {formatDate(patient.admissionDate)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                <td className="px-6 py-4 text-sm flex space-x-2">
                   <button
-                    onClick={() => onViewPatient(patient)}
-                    className="text-white bg-[#8B4513] hover:bg-[#654321] px-3 py-1 rounded transition"
+                    onClick={() => onViewPatient(p)}
+                    className="flex items-center text-white bg-[#4b7e3d] px-3 py-2 rounded-md shadow"
                   >
-                    View/Edit
+                    <FaEye className="mr-2" />
+                    View
+                  </button>
+                  <button
+                    onClick={() => onEditPatient(p)}
+                    className="flex items-center text-white bg-[#8B4513] px-3 py-2 rounded-md shadow"
+                  >
+                    <FaEdit className="mr-2" />
+                    Edit
                   </button>
                 </td>
-              </tr>
+              </motion.tr>
             ))}
           </tbody>
         </table>
       </div>
 
       {/* Mobile View */}
-      <div className="md:hidden">
-        {patients.map((patient) => (
-          <div
-            key={patient.id}
-            className="bg-white mb-4 rounded-lg shadow overflow-hidden"
+      <div className="md:hidden space-y-4">
+        {patients.map((p, i) => (
+          <motion.div
+            key={p.id}
+            className="bg-white rounded-lg shadow-md border border-[#d4c9a8]"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: i * 0.05 }}
           >
             <div
               className="px-4 py-3 bg-[#f5f5dc] flex justify-between items-center cursor-pointer"
-              onClick={() => toggleMobileRow(patient.id)}
+              onClick={() => toggleMobileRow(p.id)}
             >
-              <h3 className="font-medium text-[#8B4513]">{patient.name}</h3>
-              <span className="text-[#8B4513]">
-                {expandedRow === patient.id ? "▲" : "▼"}
-              </span>
+              <h3 className="font-medium text-[#8B4513]">{p.name}</h3>
+              <motion.div animate={{ rotate: expandedRow === p.id ? 180 : 0 }}>
+                {expandedRow === p.id ? (
+                  <FaChevronUp className="text-[#8B4513]" />
+                ) : (
+                  <FaChevronDown className="text-[#8B4513]" />
+                )}
+              </motion.div>
             </div>
-
-            <div
-              className={`px-4 py-2 ${
-                expandedRow === patient.id ? "block" : "hidden"
-              }`}
-            >
-              <p className="py-1">
-                <span className="font-medium">Age:</span> {patient.age}
-              </p>
-              <p className="py-1">
-                <span className="font-medium">Gender:</span> {patient.gender}
-              </p>
-              <p className="py-1">
-                <span className="font-medium">Diagnosis:</span>{" "}
-                {patient.diagnosis}
-              </p>
-              <p className="py-1">
-                <span className="font-medium">Admission:</span>{" "}
-                {formatDate(patient.admissionDate)}
-              </p>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onViewPatient(patient);
-                }}
-                className="mt-2 text-white bg-[#8B4513] hover:bg-[#654321] px-3 py-1 rounded transition w-full"
-              >
-                View/Edit
-              </button>
-            </div>
-          </div>
+            <AnimatePresence>
+              {expandedRow === p.id && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="px-4 py-3 space-y-2"
+                >
+                  {Object.entries({
+                    Age: p.age,
+                    Gender: p.gender,
+                    Diagnosis: p.diagnosis,
+                    Admission: formatDate(p.admissionDate),
+                  }).map(([key, value]) => (
+                    <p key={key}>
+                      <span className="font-medium text-[#8B4513]">{key}:</span>{" "}
+                      {value}
+                    </p>
+                  ))}
+                  <div className="flex space-x-2 mt-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewPatient(p);
+                      }}
+                      className="flex-1 flex items-center justify-center text-white bg-[#4b7e3d] px-3 py-2 rounded-md shadow"
+                    >
+                      <FaEye className="mr-2" />
+                      View
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEditPatient(p);
+                      }}
+                      className="flex-1 flex items-center justify-center text-white bg-[#8B4513] px-3 py-2 rounded-md shadow"
+                    >
+                      <FaEdit className="mr-2" />
+                      Edit
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         ))}
       </div>
     </div>
