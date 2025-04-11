@@ -1,15 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import {
-  FaTimes,
-  FaSave,
-  FaUser,
-  FaCalendarAlt,
-  FaVenusMars,
-  FaStethoscope,
-  FaNotesMedical,
-  FaEdit,
-} from "react-icons/fa";
+import { FaTimes, FaSave, FaEdit } from "react-icons/fa";
+import FormField from "./FormField";
+import { PATIENT_FORM_FIELDS, BUTTON_STYLES } from "../utils/helper";
 
 function PatientEditModal({ patient, onClose, onUpdate }) {
   const [formData, setFormData] = useState({
@@ -40,9 +33,6 @@ function PatientEditModal({ patient, onClose, onUpdate }) {
     onUpdate(formData);
   };
 
-  const inputClass =
-    "w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B4513]";
-
   return (
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 backdrop-blur-sm"
@@ -65,93 +55,26 @@ function PatientEditModal({ patient, onClose, onUpdate }) {
         </div>
         <form onSubmit={handleSubmit}>
           <div className="p-6 space-y-4">
-            {[
-              {
-                name: "name",
-                Icon: FaUser,
-                placeholder: "Full Name",
-                type: "text",
-              },
-              {
-                name: "age",
-                placeholder: "Age",
-                type: "number",
-                props: { min: 0, max: 120 },
-              },
-              {
-                name: "gender",
-                Icon: FaVenusMars,
-                type: "select",
-                options: ["", "Male", "Female", "Other"],
-              },
-              {
-                name: "diagnosis",
-                Icon: FaStethoscope,
-                placeholder: "Diagnosis",
-                type: "text",
-              },
-              { name: "admissionDate", Icon: FaCalendarAlt, type: "date" },
-              {
-                name: "notes",
-                Icon: FaNotesMedical,
-                placeholder: "Medical Notes",
-                type: "textarea",
-                rows: 3,
-              },
-            ].map(({ name, Icon, placeholder, type, options, props, rows }) => (
-              <div key={name} className="relative">
-                {Icon && (
-                  <Icon className="absolute top-3 left-3 text-[#8B4513]" />
-                )}
-                {type === "textarea" ? (
-                  <textarea
-                    name={name}
-                    value={formData[name]}
-                    onChange={handleChange}
-                    rows={rows}
-                    placeholder={placeholder}
-                    className={inputClass}
-                  />
-                ) : type === "select" ? (
-                  <select
-                    name={name}
-                    value={formData[name]}
-                    onChange={handleChange}
-                    className={inputClass}
-                    required
-                  >
-                    {options.map((opt) => (
-                      <option key={opt} value={opt}>
-                        {opt || "Gender"}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    name={name}
-                    value={formData[name]}
-                    onChange={handleChange}
-                    type={type}
-                    placeholder={placeholder}
-                    className={inputClass}
-                    required
-                    {...props}
-                  />
-                )}
-              </div>
+            {PATIENT_FORM_FIELDS.map((field) => (
+              <FormField
+                key={field.name}
+                field={field}
+                value={formData[field.name]}
+                onChange={handleChange}
+              />
             ))}
           </div>
           <div className="px-6 py-4 bg-gray-50 flex justify-end space-x-3 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center"
+              className={`${BUTTON_STYLES.cancel} flex items-center`}
             >
               <FaTimes className="mr-2" /> Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#8B4513] text-white rounded-lg hover:bg-[#654321] flex items-center"
+              className={`${BUTTON_STYLES.primary} flex items-center`}
             >
               <FaSave className="mr-2" /> Save Changes
             </button>

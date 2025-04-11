@@ -1,81 +1,38 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
-import { patientData } from "./data/patients";
 import PatientTable from "./components/PatientTable";
 import PatientViewModal from "./components/PatientViewModal";
 import PatientEditModal from "./components/PatientEditModal";
 import Pagination from "./components/Pagination";
+import usePatientStore from "./store/patientStore";
+import { PATIENTS_PER_PAGE } from "./utils/helper";
 
 function App() {
-  const [patients, setPatients] = useState([]);
-  const [filteredPatients, setFilteredPatients] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState({
-    key: null,
-    direction: "ascending",
-  });
-  const [modal, setModal] = useState({
-    view: false,
-    edit: false,
-    patient: null,
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const patientsPerPage = 5;
+  const {
+    filteredPatients,
+    currentPage,
+    searchTerm,
+    sortConfig,
+    modal,
+    isLoading,
+    initialize,
+    setSearchTerm,
+    requestSort,
+    openModal,
+    closeModal,
+    updatePatient,
+    setPage,
+  } = usePatientStore();
 
   useEffect(() => {
-    setTimeout(() => {
-      setPatients(patientData);
-      setFilteredPatients(patientData);
-      setIsLoading(false);
-    }, 800);
-  }, []);
+    initialize();
+  }, [initialize]);
 
-  useEffect(() => {
-    let result = [...patients].filter(
-      (p) =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.diagnosis.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    if (sortConfig.key) {
-      result.sort((a, b) => {
-        const order = sortConfig.direction === "ascending" ? 1 : -1;
-        return a[sortConfig.key] < b[sortConfig.key]
-          ? -order
-          : a[sortConfig.key] > b[sortConfig.key]
-          ? order
-          : 0;
-      });
-    }
-
-    setFilteredPatients(result);
-    setCurrentPage(1);
-  }, [patients, searchTerm, sortConfig]);
-
-  const requestSort = (key) => {
-    setSortConfig({
-      key,
-      direction:
-        sortConfig.key === key && sortConfig.direction === "ascending"
-          ? "descending"
-          : "ascending",
-    });
-  };
-
-  const handleModal = (type, patient = null) =>
-    setModal({ view: type === "view", edit: type === "edit", patient });
-
-  const handleUpdatePatient = (updatedPatient) => {
-    setPatients(
-      patients.map((p) => (p.id === updatedPatient.id ? updatedPatient : p))
-    );
-    handleModal("");
-  };
-
+  const indexOfLastPatient = currentPage * PATIENTS_PER_PAGE;
+  const indexOfFirstPatient = indexOfLastPatient - PATIENTS_PER_PAGE;
   const currentPatients = filteredPatients.slice(
-    (currentPage - 1) * patientsPerPage,
-    currentPage * patientsPerPage
+    indexOfFirstPatient,
+    indexOfLastPatient
   );
 
   return (
@@ -106,29 +63,26 @@ function App() {
               patients={currentPatients}
               requestSort={requestSort}
               sortConfig={sortConfig}
-              onViewPatient={(p) => handleModal("view", p)}
-              onEditPatient={(p) => handleModal("edit", p)}
+              onViewPatient={(p) => openModal("view", p)}
+              onEditPatient={(p) => openModal("edit", p)}
             />
             <Pagination
-              patientsPerPage={patientsPerPage}
+              patientsPerPage={PATIENTS_PER_PAGE}
               totalPatients={filteredPatients.length}
               currentPage={currentPage}
-              paginate={setCurrentPage}
+              paginate={setPage}
             />
           </>
         )}
 
         {modal.view && (
-          <PatientViewModal
-            patient={modal.patient}
-            onClose={() => handleModal("")}
-          />
+          <PatientViewModal patient={modal.patient} onClose={closeModal} />
         )}
         {modal.edit && (
           <PatientEditModal
             patient={modal.patient}
-            onClose={() => handleModal("")}
-            onUpdate={handleUpdatePatient}
+            onClose={closeModal}
+            onUpdate={updatePatient}
           />
         )}
       </div>
